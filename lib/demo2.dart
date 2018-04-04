@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -16,25 +15,12 @@ class DemoPage extends StatefulWidget {
 }
 
 class _DemoPageState extends State<DemoPage> {
-  Random r = new Random();
-
-  void update() {
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        centerTitle: true,
-        title: new Text('Demo Curves'),
-      ),
       body: new DemoBody(
         screenSize: MediaQuery.of(context).size,
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: update,
-        child: new Icon(Icons.repeat),
       ),
     );
   }
@@ -56,16 +42,37 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   Animation<double> animationTime;
   Animation<double> animation;
   List<Offset> offsetList;
+  List<Curve> curveDemoList;
   String curveStr;
-
   Size screenSize;
+  double axisArea = 250.0;
 
+  int curveDemoIndex = 0;
   @override
   void initState() {
     super.initState();
     screenSize = widget.screenSize;
     offsetList = new List<Offset>();
-    setUpAnimation(Curves.easeInOut);
+
+    curveDemoList = [
+      Curves.linear,
+      Curves.decelerate,
+      Curves.ease,
+      Curves.easeIn,
+      Curves.easeOut,
+      Curves.easeInOut,
+      Curves.fastOutSlowIn,
+      Curves.bounceIn,
+      Curves.bounceOut,
+      Curves.bounceInOut,
+      Curves.elasticIn,
+      Curves.elasticOut,
+      Curves.elasticInOut,
+      const Cubic(0.25, 0.0, 0.0, 1.0)
+    ];
+
+    //CHANGE curve here to see effect
+    setUpAnimation(curveDemoList[curveDemoIndex]);
   }
 
   @override
@@ -77,13 +84,13 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Container(
-      margin: const EdgeInsets.all(30.0),
+      alignment: Alignment.center,
       child: new CustomPaint(
         size: new Size(
-          MediaQuery.of(context).size.width,
-          MediaQuery.of(context).size.height,
+          axisArea,
+          axisArea,
         ),
-        painter: new _DemoPainter(offsetList, curveStr),
+        painter: new _DemoPainter(offsetList, curveStr, axisArea),
       ),
     );
   }
@@ -103,7 +110,9 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
       curveStr = 'easeInOut';
     } else if (curve == Curves.fastOutSlowIn) {
       curveStr = 'fastOutSlowIn';
-    } else if (curve == Curves.bounceOut) {
+    } else if (curve == Curves.bounceIn) {
+      curveStr = 'bounceIn';
+    }  else if (curve == Curves.bounceOut) {
       curveStr = 'bounceOut';
     } else if (curve == Curves.bounceInOut) {
       curveStr = 'bounceInOut';
@@ -122,10 +131,10 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    animation = new Tween<double>(begin: 0.0, end: 300.0)
+    animation = new Tween<double>(begin: 0.0, end: axisArea)
         .animate(intervalCurved(curve: curve));
     animationTime =
-        new Tween<double>(begin: 0.0, end: 300.0).animate(animationController);
+        new Tween<double>(begin: 0.0, end: axisArea).animate(animationController);
 
     animationController
       ..addListener(() {
@@ -135,7 +144,11 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
       ..addStatusListener((status) {
         if (status == AnimationStatus.dismissed) {
           offsetList.clear();
-          animationController.forward();
+
+          curveDemoIndex = (curveDemoIndex + 1) % curveDemoList.length;
+          setUpAnimation(curveDemoList[curveDemoIndex]);
+
+
         } else if (status == AnimationStatus.completed) {
           offsetList.clear();
           animationController.reverse();
@@ -161,8 +174,9 @@ class _DemoPainter extends CustomPainter {
   Paint linearPainter;
   List<Offset> offsetList;
   String curveName;
+  double axisArea;
 
-  _DemoPainter(this.offsetList, this.curveName) {
+  _DemoPainter(this.offsetList, this.curveName, this.axisArea) {
     curvePainter = new Paint()
       ..color = Colors.orange
       ..strokeWidth = 2.0
@@ -184,27 +198,27 @@ class _DemoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Draw value axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(0.0, 320.0), axisPainter);
+    canvas.drawLine(new Offset(0.0, 0.0), new Offset(0.0, axisArea + 20), axisPainter);
     canvas.drawLine(
-        new Offset(-10.0, 310.0), new Offset(0.0, 320.0), axisPainter);
+        new Offset(-5.0, axisArea), new Offset(0.0, axisArea + 20), axisPainter);
     canvas.drawLine(
-        new Offset(0.0, 320.0), new Offset(10.0, 310.0), axisPainter);
+        new Offset(0.0, axisArea + 20), new Offset(5.0, axisArea ), axisPainter);
 
     // Draw time axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(320.0, 0.0), axisPainter);
+    canvas.drawLine(new Offset(0.0, 0.0), new Offset(axisArea + 20, 0.0), axisPainter);
     canvas.drawLine(
-        new Offset(310.0, -10.0), new Offset(320.0, 0.0), axisPainter);
+        new Offset(axisArea, -5.0), new Offset(axisArea + 20, 0.0), axisPainter);
     canvas.drawLine(
-        new Offset(320.0, 0.0), new Offset(310.0, 10.0), axisPainter);
+        new Offset(axisArea + 20, 0.0), new Offset(axisArea, 5.0), axisPainter);
 
     // Draw linear line
     canvas.drawLine(
-        new Offset(0.0, 0.0), new Offset(300.0, 300.0), linearPainter);
+        new Offset(0.0, 0.0), new Offset(axisArea, axisArea), linearPainter);
     // Draw text
     drawText(canvas, new Offset(-20.0, -20.0), '0,0');
-    drawText(canvas, new Offset(-20.0, 320.0), 'value');
-    drawText(canvas, new Offset(320.0, -20.0), 'time');
-    drawText(canvas, new Offset(150.0, 320.0), curveName);
+    drawText(canvas, new Offset(-20.0, axisArea + 20), 'value');
+    drawText(canvas, new Offset(axisArea + 20, -20.0), 'time');
+    drawText(canvas, new Offset(axisArea/2, axisArea + 20), curveName);
 
     // Draw points list
     canvas.drawPoints(ui.PointMode.polygon, offsetList, curvePainter);
@@ -235,3 +249,4 @@ class _DemoPainter extends CustomPainter {
     tp.paint(canvas, offset);
   }
 }
+
