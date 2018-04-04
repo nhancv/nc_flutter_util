@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -10,12 +11,11 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 4.0;
+    timeDilation = 1.0;
   }
 }
 
 class _DemoPageState extends State<DemoPage> {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -45,9 +45,10 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   List<Curve> curveDemoList;
   String curveStr;
   Size screenSize;
-  double axisArea = 250.0;
+  double axisArea = 300.0;
 
   int curveDemoIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -112,7 +113,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
       curveStr = 'fastOutSlowIn';
     } else if (curve == Curves.bounceIn) {
       curveStr = 'bounceIn';
-    }  else if (curve == Curves.bounceOut) {
+    } else if (curve == Curves.bounceOut) {
       curveStr = 'bounceOut';
     } else if (curve == Curves.bounceInOut) {
       curveStr = 'bounceInOut';
@@ -127,28 +128,28 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     }
 
     animationController = new AnimationController(
-      duration: new Duration(milliseconds: 700),
+      duration: new Duration(milliseconds: 2000),
       vsync: this,
     );
 
     animation = new Tween<double>(begin: 0.0, end: axisArea)
         .animate(intervalCurved(curve: curve));
-    animationTime =
-        new Tween<double>(begin: 0.0, end: axisArea).animate(animationController);
+    animationTime = new Tween<double>(begin: 0.0, end: axisArea)
+        .animate(animationController);
 
     animationController
       ..addListener(() {
-        offsetList.add(new Offset(animation.value, animationTime.value));
+        offsetList.add(new Offset(animationTime.value, animation.value));
         setState(() {});
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.dismissed) {
           offsetList.clear();
 
-          curveDemoIndex = (curveDemoIndex + 1) % curveDemoList.length;
-          setUpAnimation(curveDemoList[curveDemoIndex]);
-
-
+          new Timer(new Duration(milliseconds: 200), () {
+            curveDemoIndex = (curveDemoIndex + 1) % curveDemoList.length;
+            setUpAnimation(curveDemoList[curveDemoIndex]);
+          });
         } else if (status == AnimationStatus.completed) {
           offsetList.clear();
           animationController.reverse();
@@ -198,16 +199,18 @@ class _DemoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Draw value axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(0.0, axisArea + 20), axisPainter);
     canvas.drawLine(
-        new Offset(-5.0, axisArea), new Offset(0.0, axisArea + 20), axisPainter);
+        new Offset(0.0, 0.0), new Offset(0.0, axisArea + 20), axisPainter);
+    canvas.drawLine(new Offset(-5.0, axisArea), new Offset(0.0, axisArea + 20),
+        axisPainter);
     canvas.drawLine(
-        new Offset(0.0, axisArea + 20), new Offset(5.0, axisArea ), axisPainter);
+        new Offset(0.0, axisArea + 20), new Offset(5.0, axisArea), axisPainter);
 
     // Draw time axis
-    canvas.drawLine(new Offset(0.0, 0.0), new Offset(axisArea + 20, 0.0), axisPainter);
     canvas.drawLine(
-        new Offset(axisArea, -5.0), new Offset(axisArea + 20, 0.0), axisPainter);
+        new Offset(0.0, 0.0), new Offset(axisArea + 20, 0.0), axisPainter);
+    canvas.drawLine(new Offset(axisArea, -5.0), new Offset(axisArea + 20, 0.0),
+        axisPainter);
     canvas.drawLine(
         new Offset(axisArea + 20, 0.0), new Offset(axisArea, 5.0), axisPainter);
 
@@ -218,7 +221,7 @@ class _DemoPainter extends CustomPainter {
     drawText(canvas, new Offset(-20.0, -20.0), '0,0');
     drawText(canvas, new Offset(-20.0, axisArea + 20), 'value');
     drawText(canvas, new Offset(axisArea + 20, -20.0), 'time');
-    drawText(canvas, new Offset(axisArea/2, axisArea + 20), curveName);
+    drawText(canvas, new Offset(axisArea / 2, axisArea + 20), curveName);
 
     // Draw points list
     canvas.drawPoints(ui.PointMode.polygon, offsetList, curvePainter);
@@ -242,11 +245,10 @@ class _DemoPainter extends CustomPainter {
   void drawText(Canvas canvas, Offset offset, String text) {
     TextPainter tp = new TextPainter(
         text:
-            new TextSpan(style: new TextStyle (color: Colors.black), text: text),
+            new TextSpan(style: new TextStyle(color: Colors.black), text: text),
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr);
     tp.layout();
     tp.paint(canvas, offset);
   }
 }
-
