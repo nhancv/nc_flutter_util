@@ -77,7 +77,7 @@ class _TabIndicatorState extends State<TabIndicator>
     section = screenSize.width / 8;
     horizontalPadding = section - iconSize / 2;
 
-    setUpAnimation(0, 0);
+    setUpAnimation(widget.fromIndex, widget.toIndex);
   }
 
   @override
@@ -124,11 +124,11 @@ class _TabIndicatorState extends State<TabIndicator>
     dxTargetAnim = new Tween<double>(
             begin: section * (fromIndex * 2 + 1),
             end: section * (toIndex * 2 + 1))
-        .animate(intervalCurved(0.0, 1.0));
+        .animate(intervalCurved(begin: 0.0, end: 1.0));
     dxEntryAnim = new Tween<double>(
             begin: section * (fromIndex * 2 + 1),
             end: section * (toIndex * 2 + 1))
-        .animate(intervalCurved(0.5, 1.0));
+        .animate(intervalCurved(begin: 0.5, end: 1.0));
 
     animationController
       ..addListener(() {
@@ -140,7 +140,8 @@ class _TabIndicatorState extends State<TabIndicator>
     }
   }
 
-  CurvedAnimation intervalCurved(begin, end, [curve = Curves.easeInOut]) {
+  CurvedAnimation intervalCurved(
+      {begin = 0.0, end = 1.0, curve = Curves.easeInOut}) {
     return new CurvedAnimation(
       parent: animationController,
       curve: new Interval(begin, end, curve: curve),
