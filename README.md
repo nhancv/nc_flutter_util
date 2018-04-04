@@ -7,5 +7,14 @@ A new Flutter application.
 For help getting started with Flutter, view our online
 [documentation](https://flutter.io/).
 
-Source tag: Demo1
-![Preview](demo/demo.gif)
+Source tag: 
+
+### Demo1
+Flutter custom indicator animation simple: https://medium.com/p/2c487489040b
+
+![Preview](demo/demo1.gif)
+
+### Demo2
+Flutter curves simulation: https://medium.com/p/f935bb225ad2
+
+![Preview](demo/curves/curve_simulation.gif)
