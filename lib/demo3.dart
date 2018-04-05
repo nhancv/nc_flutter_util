@@ -12,7 +12,7 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 4.0;
+    timeDilation = 1.0;
   }
 }
 
@@ -43,22 +43,36 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   List<Node> nodeList;
   Size screenSize;
 
+  int numNodes = 2;
+
   @override
   void initState() {
     super.initState();
     screenSize = widget.screenSize;
     nodeList = new List();
-    for (int i = 0; i < 5; i++) {
-      nodeList.add(new Node(screenSize: screenSize));
+    for (int i = 0; i < numNodes; i++) {
+      nodeList.add(new Node(id: i, screenSize: screenSize));
     }
 
     animationController = new AnimationController(
-        vsync: this, duration: new Duration(seconds: 10));
+        vsync: this, duration: new Duration(seconds: 20));
     animationController.addListener(() {
       for (int i = 0; i < nodeList.length; i++) {
         nodeList[i].move();
+        for (int j = 0; j < nodeList.length; j++) {
+          if (i != j) {
+            nodeList[i].connect(nodeList[j]);
+          }
+        }
       }
       setState(() {});
+    });
+    animationController.addStatusListener((state) {
+      if (state == AnimationStatus.dismissed) {
+        animationController.forward();
+      } else if (state == AnimationStatus.completed) {
+        animationController.reverse();
+      }
     });
     animationController.forward();
   }
@@ -86,19 +100,13 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
 class _DemoPainter extends CustomPainter {
   List<Node> nodeList;
   Size screenSize;
-  Paint painter;
 
-  _DemoPainter(this.screenSize, this.nodeList) {
-    painter = new Paint()
-      ..color = Colors.orange
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.fill;
-  }
+  _DemoPainter(this.screenSize, this.nodeList);
 
   @override
   void paint(Canvas canvas, Size size) {
     for (var node in nodeList) {
-      node.display(canvas, painter);
+      node.display(canvas);
     }
   }
 
@@ -118,24 +126,35 @@ enum Direction {
 }
 
 class Node {
+  int id;
   Size screenSize;
   double radius;
+  double size;
   Offset position;
-  double dx, dy;
   Direction direction;
   Random random;
+  Paint notePaint, linePaint;
 
-  bool activeConnection;
   Map<int, Node> connected;
 
-  Node({this.radius = 5.0, @required this.screenSize}) {
+  Node(
+      {@required this.id,
+      this.size = 5.0,
+      this.radius = 200.0,
+      @required this.screenSize}) {
     random = new Random();
-    activeConnection = false;
     connected = new Map();
-    dx = screenSize.width / 2;
-    dy = screenSize.height / 2;
     position = screenSize.center(Offset.zero);
     direction = Direction.values[random.nextInt(Direction.values.length)];
+
+    notePaint = new Paint()
+      ..color = Colors.orange
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.fill;
+    linePaint = new Paint()
+      ..color = Colors.orange
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
   }
 
   void move() {
@@ -289,7 +308,28 @@ class Node {
     }
   }
 
-  void display(Canvas canvas, Paint paint) {
-    canvas.drawCircle(position, radius, paint);
+  bool canConnect(Node node) {
+    double x = node.position.dx - position.dx;
+    double y = node.position.dy - position.dy;
+    double d = x * x + y * y;
+    return d <= radius * radius;
+  }
+
+  void connect(Node node) {
+    if (canConnect(node)) {
+      if (!node.connected.containsKey(id)) {
+        connected.putIfAbsent(node.id, () => node);
+      }
+    } else if (connected.containsKey(node.id)) {
+      connected.remove(node.id);
+    }
+  }
+
+  void display(Canvas canvas) {
+    canvas.drawCircle(position, size, notePaint);
+
+    connected.forEach((id, node) {
+      canvas.drawLine(position, node.position, linePaint);
+    });
   }
 }
