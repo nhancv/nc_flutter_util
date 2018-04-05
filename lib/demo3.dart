@@ -241,7 +241,7 @@ class Node {
             dirAvailableList.add(Direction.LEFT);
             dirAvailableList.add(Direction.RIGHT);
             dirAvailableList.add(Direction.BOTTOM);
-            dirAvailableList.add(Direction.BOTTOM_LEFT);
+            dirAvailableList.add(Direction.BOTTOM_RIGHT);
           }
           //if x invalid and y valid
           if (position.dx >= screenSize.width - 5.0 && position.dy > 5.0) {
@@ -291,7 +291,7 @@ class Node {
             dirAvailableList.add(Direction.LEFT);
             dirAvailableList.add(Direction.RIGHT);
             dirAvailableList.add(Direction.TOP);
-            dirAvailableList.add(Direction.TOP_LEFT);
+            dirAvailableList.add(Direction.TOP_RIGHT);
           }
           //if x invalid and y valid
           if (position.dx >= screenSize.width - 5.0 &&
