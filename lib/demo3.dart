@@ -43,7 +43,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   List<Node> nodeList;
   Size screenSize;
 
-  int numNodes = 2;
+  int numNodes = 20;
 
   @override
   void initState() {
