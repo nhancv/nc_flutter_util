@@ -39,6 +39,7 @@ class DemoBody extends StatefulWidget {
 }
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
+  AnimationController animationController;
   List<Node> nodeList;
   Size screenSize;
 
@@ -51,16 +52,15 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
       nodeList.add(new Node(screenSize: screenSize));
     }
 
-    runSimulation();
-  }
-
-  void runSimulation() async {
-    new Timer.periodic(new Duration(milliseconds: 10), (timer) {
+    animationController = new AnimationController(
+        vsync: this, duration: new Duration(seconds: 10));
+    animationController.addListener(() {
       for (int i = 0; i < nodeList.length; i++) {
         nodeList[i].move();
       }
       setState(() {});
     });
+    animationController.forward();
   }
 
   @override
@@ -125,8 +125,13 @@ class Node {
   Direction direction;
   Random random;
 
+  bool activeConnection;
+  Map<int, Node> connected;
+
   Node({this.radius = 5.0, @required this.screenSize}) {
     random = new Random();
+    activeConnection = false;
+    connected = new Map();
     dx = screenSize.width / 2;
     dy = screenSize.height / 2;
     position = screenSize.center(Offset.zero);
