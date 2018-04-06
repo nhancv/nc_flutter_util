@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -20,9 +18,7 @@ class _DemoPageState extends State<DemoPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new DemoBody(
-        screenSize: MediaQuery.of(context).size,
-      ),
+      body: new DemoBody(screenSize: MediaQuery.of(context).size),
     );
   }
 }
@@ -40,66 +36,55 @@ class DemoBody extends StatefulWidget {
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
-  List<Node> nodeList;
-  Size screenSize;
-
-  int numNodes = 20;
+  final nodeList = <Node>[];
+  final numNodes = 20;
 
   @override
   void initState() {
     super.initState();
-    screenSize = widget.screenSize;
-    nodeList = new List();
-    for (int i = 0; i < numNodes; i++) {
-      nodeList.add(new Node(id: i, screenSize: screenSize));
-    }
 
-    animationController = new AnimationController(
-        vsync: this, duration: new Duration(seconds: 20));
-    animationController.addListener(() {
-      for (int i = 0; i < nodeList.length; i++) {
-        nodeList[i].move();
-        for (int j = 0; j < nodeList.length; j++) {
-          if (i != j) {
-            nodeList[i].connect(nodeList[j]);
-          }
-        }
-      }
-      setState(() {});
+    // Generate list of node
+    new List.generate(numNodes, (i) {
+      nodeList.add(new Node(id: i, screenSize: widget.screenSize));
     });
-    animationController.addStatusListener((state) {
-      if (state == AnimationStatus.dismissed) {
-        animationController.forward();
-      } else if (state == AnimationStatus.completed) {
-        animationController.reverse();
-      }
-    });
-    animationController.forward();
+
+    animationController =
+        new AnimationController(vsync: this, duration: new Duration(seconds: 20))
+          ..addListener(() {
+            for (int i = 0; i < nodeList.length; i++) {
+              nodeList[i].move(animationController.value);
+              for (int j = i + 1; j < nodeList.length; j++) {
+                nodeList[i].connect(nodeList[j]);
+              }
+            }
+          })
+          ..repeat();
   }
 
   @override
   void dispose() {
+    animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
     return new Container(
-      child: new CustomPaint(
-        size: new Size(
-          screenSize.width,
-          screenSize.height,
-        ),
-        painter: new _DemoPainter(screenSize, nodeList),
+      child: new AnimatedBuilder(
+        animation: new CurvedAnimation(
+            parent: animationController, curve: Curves.easeInOut),
+        builder: (context, child) => new CustomPaint(
+              size: widget.screenSize,
+              painter: new _DemoPainter(widget.screenSize, nodeList),
+            ),
       ),
     );
   }
 }
 
 class _DemoPainter extends CustomPainter {
-  List<Node> nodeList;
-  Size screenSize;
+  final List<Node> nodeList;
+  final Size screenSize;
 
   _DemoPainter(this.screenSize, this.nodeList);
 
@@ -157,10 +142,10 @@ class Node {
       ..style = PaintingStyle.stroke;
   }
 
-  void move() {
+  void move(double seed) {
     switch (direction) {
       case Direction.LEFT:
-        position -= new Offset(1.0, 0.0);
+        position -= new Offset(1.0 + seed, 0.0);
         if (position.dx <= 5.0) {
           List<Direction> dirAvailableList = [
             Direction.RIGHT,
@@ -172,7 +157,7 @@ class Node {
 
         break;
       case Direction.RIGHT:
-        position += new Offset(1.0, 0.0);
+        position += new Offset(1.0 + seed, 0.0);
         if (position.dx >= screenSize.width - 5.0) {
           List<Direction> dirAvailableList = [
             Direction.LEFT,
@@ -183,7 +168,7 @@ class Node {
         }
         break;
       case Direction.TOP:
-        position -= new Offset(0.0, 1.0);
+        position -= new Offset(0.0, 1.0 + seed);
         if (position.dy <= 5.0) {
           List<Direction> dirAvailableList = [
             Direction.BOTTOM,
@@ -194,7 +179,7 @@ class Node {
         }
         break;
       case Direction.BOTTOM:
-        position += new Offset(0.0, 1.0);
+        position += new Offset(0.0, 1.0 + seed);
         if (position.dy >= screenSize.height - 5.0) {
           List<Direction> dirAvailableList = [
             Direction.TOP,
@@ -205,7 +190,7 @@ class Node {
         }
         break;
       case Direction.TOP_LEFT:
-        position -= new Offset(1.0, 1.0);
+        position -= new Offset(1.0 + seed, 1.0 + seed);
         if (position.dx <= 5.0 || position.dy <= 5.0) {
           List<Direction> dirAvailableList = [
             Direction.BOTTOM_RIGHT,
@@ -230,7 +215,7 @@ class Node {
         }
         break;
       case Direction.TOP_RIGHT:
-        position -= new Offset(-1.0, 1.0);
+        position -= new Offset(-1.0 - seed, 1.0 + seed);
         if (position.dx >= screenSize.width - 5.0 || position.dy <= 5.0) {
           List<Direction> dirAvailableList = [
             Direction.BOTTOM_LEFT,
@@ -255,7 +240,7 @@ class Node {
         }
         break;
       case Direction.BOTTOM_LEFT:
-        position -= new Offset(1.0, -1.0);
+        position -= new Offset(1.0 + seed, -1.0 + seed);
         if (position.dx <= 5.0 || position.dy >= screenSize.height - 5.0) {
           List<Direction> dirAvailableList = [
             Direction.TOP_RIGHT,
@@ -279,7 +264,7 @@ class Node {
         }
         break;
       case Direction.BOTTOM_RIGHT:
-        position += new Offset(1.0, 1.0);
+        position += new Offset(1.0 + seed, 1.0 + seed);
         if (position.dx >= screenSize.width - 5.0 ||
             position.dy >= screenSize.height - 5.0) {
           List<Direction> dirAvailableList = [
@@ -332,4 +317,8 @@ class Node {
       canvas.drawLine(position, node.position, linePaint);
     });
   }
+
+  bool operator ==(o) => o is Node && o.id == id;
+
+  int get hashCode => id;
 }
