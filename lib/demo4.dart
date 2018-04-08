@@ -10,7 +10,7 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 1.0;
+    timeDilation = 2.0;
   }
 }
 
@@ -36,15 +36,40 @@ class DemoBody extends StatefulWidget {
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
+  Animation<double> animation;
+  Animation<double> scale;
+  Animation<double> borderWidth;
+  Animation<BorderRadius> borderRadius;
+  Animation<Color> color;
 
   @override
   void initState() {
     super.initState();
 
     animationController = new AnimationController(
-        vsync: this, duration: new Duration(seconds: 20))
-      ..addListener(() {})
-      ..repeat();
+        vsync: this, duration: new Duration(seconds: 2));
+
+    animation = new Tween<double>(begin: -100.0, end: 20.0)
+        .animate(animationController);
+    scale =
+        new Tween<double>(begin: 1.0, end: 0.5).animate(animationController);
+    borderWidth =
+        new Tween<double>(begin: 3.0, end: 0.0).animate(animationController);
+    borderRadius = new BorderRadiusTween(
+            begin: new BorderRadius.circular(0.0),
+            end: new BorderRadius.circular(75.0))
+        .animate(animationController);
+    color = new ColorTween(begin: Colors.yellow, end: Colors.red)
+        .animate(animationController);
+
+    animationController.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed) {
+        animationController.forward();
+      } else if (status == AnimationStatus.completed) {
+        animationController.reverse();
+      }
+    });
+    animationController.forward();
   }
 
   @override
@@ -56,12 +81,36 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Container(
+      alignment: Alignment.center,
       child: new AnimatedBuilder(
         animation: new CurvedAnimation(
-            parent: animationController, curve: Curves.easeInOut),
-        builder: (context, child) => new CustomPaint(
-              size: widget.screenSize,
-              painter: new _DemoPainter(widget.screenSize),
+          parent: animationController,
+          curve: Curves.easeInOut,
+        ),
+        builder: (context, child) => new Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Container(
+                  width: 100.0,
+                  height: 100.0,
+                  color: Colors.red,
+                ),
+                new Container(
+                  width: 100.0,
+                  height: 100.0,
+                  transform: new Matrix4.identity()
+                    ..translate(1.0, animation.value, 1.0)
+                    ..scale(scale.value),
+                  decoration: new BoxDecoration(
+                    color: color.value,
+                    border: new Border.all(
+                      color: Colors.indigo[300],
+                      width: borderWidth.value,
+                    ),
+                    borderRadius: borderRadius.value,
+                  ),
+                ),
+              ],
             ),
       ),
     );
