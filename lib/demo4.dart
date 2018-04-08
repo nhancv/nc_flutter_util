@@ -116,15 +116,3 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     );
   }
 }
-
-class _DemoPainter extends CustomPainter {
-  final Size screenSize;
-
-  _DemoPainter(this.screenSize);
-
-  @override
-  void paint(Canvas canvas, Size size) {}
-
-  @override
-  bool shouldRepaint(_DemoPainter oldDelegate) => true;
-}
