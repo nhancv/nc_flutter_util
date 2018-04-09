@@ -44,11 +44,11 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     position = widget.screenSize.center(Offset.zero);
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
-    animationController.forward();
   }
 
   @override
   void dispose() {
+    animationController.dispose();
     super.dispose();
   }
 
@@ -86,7 +86,6 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   }
 
   void onPanUpdate(DragUpdateDetails details) {
-    print('onPanUpdate: $details');
     setState(() {
       position = details.globalPosition;
     });
