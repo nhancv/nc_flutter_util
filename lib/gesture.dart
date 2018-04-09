@@ -36,11 +36,12 @@ class DemoBody extends StatefulWidget {
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
+  Offset position;
 
   @override
   void initState() {
     super.initState();
-
+    position = widget.screenSize.center(Offset.zero);
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
     animationController.forward();
@@ -60,20 +61,44 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
           parent: animationController,
           curve: Curves.easeInOut,
         ),
-        builder: (context, child) => new CustomPaint(
-              size: widget.screenSize,
-              painter: new _DemoPainter(widget.screenSize),
+        builder: (context, child) => new GestureDetector(
+              onPanStart: onPanStart,
+              onPanEnd: onPanEnd,
+              onPanUpdate: onPanUpdate,
+              child: new CustomPaint(
+                size: widget.screenSize,
+                painter: new _DemoPainter(widget.screenSize, position),
+              ),
             ),
       ),
     );
+  }
+
+  void onPanStart(DragStartDetails details) {
+    print('onPanStart: $details');
+    setState(() {
+      position = details.globalPosition;
+    });
+  }
+
+  void onPanEnd(DragEndDetails details) {
+    print('onPanEnd: $details');
+  }
+
+  void onPanUpdate(DragUpdateDetails details) {
+    print('onPanUpdate: $details');
+    setState(() {
+      position = details.globalPosition;
+    });
   }
 }
 
 class _DemoPainter extends CustomPainter {
   final Size screenSize;
+  final Offset position;
   Paint painter;
 
-  _DemoPainter(this.screenSize) {
+  _DemoPainter(this.screenSize, this.position) {
     painter = new Paint()
       ..strokeWidth = 1.0
       ..color = Colors.red
@@ -82,7 +107,7 @@ class _DemoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(size.center(Offset.zero), 50.0, painter);
+    canvas.drawCircle(position, 50.0, painter);
   }
 
   @override
