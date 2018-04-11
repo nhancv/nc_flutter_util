@@ -106,9 +106,10 @@ class _DemoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(position, 50.0, painter);
+
   }
 
   @override
   bool shouldRepaint(_DemoPainter oldDelegate) => true;
+
 }
