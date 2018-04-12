@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/animation.dart';
@@ -41,23 +42,30 @@ class DemoBody extends StatefulWidget {
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
   CharacterFactory characterFactory;
+  bool drawChar = true;
 
   @override
   void initState() {
     super.initState();
     animationController = new AnimationController(
-        vsync: this, duration: new Duration(seconds: 2));
+        vsync: this, duration: new Duration(seconds: 1));
 
     characterFactory = new CharacterFactory();
 
     animationController.addListener(() {
-      characterFactory.addPoint(animationController.value);
+      if (drawChar) {
+        characterFactory.addPoint(animationController.value);
+      }
     });
 
     animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        if (characterFactory.step != -1) {
-          characterFactory.step++;
+        if (drawChar) {
+          if (characterFactory.step != -1) {
+            characterFactory.step++;
+          } else {
+            drawChar = false;
+          }
           animationController.reset();
           animationController.forward();
         }
@@ -81,10 +89,17 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
           parent: animationController,
           curve: Curves.easeInOut,
         ),
-        builder: (context, child) => new CustomPaint(
-              size: widget.screenSize,
-              painter: new _DemoPainter(widget.screenSize,
-                  characterFactory.offsetPoint, characterFactory.path),
+        builder: (context, child) => new Container(
+              child: drawChar
+                  ? new CustomPaint(
+                      size: widget.screenSize,
+                      painter: new _DemoPainter(widget.screenSize,
+                          characterFactory.offsetPoint, characterFactory.path),
+                    )
+                  : new Container(
+                      width: animationController.value * 200,
+                      child: new Image.asset('images/icon.png'),
+                    ),
             ),
       ),
     );
@@ -109,9 +124,9 @@ class _DemoPainter extends CustomPainter {
     canvas.drawPath(path, painter);
     canvas.drawCircle(offsetPoint, 10.0, painter);
 
-    canvas.drawLine(new Offset(0.0, 100.0), new Offset(600.0, 100.0), painter);
-    canvas.drawLine(new Offset(0.0, 150.0), new Offset(600.0, 150.0), painter);
-    canvas.drawLine(new Offset(0.0, 200.0), new Offset(600.0, 200.0), painter);
+    canvas.drawLine(new Offset(0.0, 100.0), new Offset(550.0, 100.0), painter);
+    canvas.drawLine(new Offset(0.0, 150.0), new Offset(550.0, 150.0), painter);
+    canvas.drawLine(new Offset(0.0, 200.0), new Offset(550.0, 200.0), painter);
   }
 
   @override
@@ -149,8 +164,8 @@ class CharacterFactory {
     tChar(time, 330.0, 15);
     sChar(time, 380.0, 18);
     oChar(time, 430.0, 19);
-    fChar(time, 490.0, 20);
-    finish = tChar(time, 520.0, 22);
+    fChar(time, 480.0, 20);
+    finish = tChar(time, 510.0, 22);
 
     if (finish) {
       step = -1;
@@ -247,7 +262,7 @@ class CharacterFactory {
         new Offset(20.0 + xOffset, 135.0),
         new Offset(20.0 + xOffset, 140.0),
       ], time);
-    } else if (step > stepOffset +2) {
+    } else if (step > stepOffset + 2) {
       return true;
     }
     path.addRect(new Rect.fromCircle(center: offsetPoint, radius: 2.0));
@@ -376,5 +391,4 @@ class CharacterFactory {
     path.addRect(new Rect.fromCircle(center: offsetPoint, radius: 2.0));
     return false;
   }
-
 }

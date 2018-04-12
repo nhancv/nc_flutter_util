@@ -23,3 +23,8 @@ Flutter curves simulation: https://medium.com/p/f935bb225ad2
 Flutter simple particle motion: https://medium.com/p/3b48fd1f182
 
 ![Preview](demo/demo3/particle_motion.gif)
+
+### Handwriting animation
+Funny handwriting animation: https://medium.com/p/1183029b825b 
+
+![Preview](demo/beesight/full.gif)
