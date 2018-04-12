@@ -5,14 +5,10 @@ import 'package:flutter/material.dart';
 //import 'demo2.dart';
 //import 'demo3.dart';
 import 'beesight.dart';
-import 'dartpros.dart';
 
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
-  MyApp() {
-    new April.origin()..getOdd()..printString();
-  }
 
   @override
   Widget build(BuildContext context) {
