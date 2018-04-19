@@ -43,15 +43,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
 
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
-
-    animationController.addStatusListener((status) {
-      if (status == AnimationStatus.dismissed) {
-        animationController.forward();
-      } else if (status == AnimationStatus.completed) {
-        animationController.reverse();
-      }
-    });
-    animationController.forward();
+    animationController.repeat();
   }
 
   @override
@@ -75,6 +67,14 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
                 widget.screenSize.height,
               ),
               painter: new _DemoPainter(widget.screenSize),
+              child: new ClipPath(
+                child: new Container(
+                  width: widget.screenSize.width,
+                  height: 200.0,
+                  color: Colors.red,
+                ),
+                clipper: new WaveClipper(animationController.value),
+              ),
             ),
       ),
     );
@@ -87,9 +87,53 @@ class _DemoPainter extends CustomPainter {
   _DemoPainter(this.screenSize);
 
   @override
-  void paint(Canvas canvas, Size size) {
-  }
+  void paint(Canvas canvas, Size size) {}
 
   @override
   bool shouldRepaint(_DemoPainter oldDelegate) => true;
+}
+
+class WaveClipper extends CustomClipper<Path> {
+  final double animation;
+  double waveHeight = 70.0;
+  double padding = 50.0;
+
+  WaveClipper(this.animation);
+
+  Offset getQuadraticBezier(List<Offset> offsetList, double t) {
+    return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
+  }
+
+  Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j) {
+    if (i == j) return offsetList[i];
+
+    Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1);
+    Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j);
+    Offset res =
+        new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
+    return res;
+  }
+
+  @override
+  Path getClip(Size size) {
+    Path path = new Path();
+    path.moveTo(0.0 - padding, waveHeight);
+
+    Offset moving = getQuadraticBezier([
+      new Offset(0.0 - padding, waveHeight),
+      new Offset(size.width / 4, -waveHeight * 2),
+      new Offset(size.width / 4 * 3, waveHeight * 4),
+      new Offset(size.width +  padding, waveHeight),
+    ], animation);
+    path.quadraticBezierTo(moving.dx, moving.dy, size.width, waveHeight);
+
+    path.lineTo(size.width + padding, size.height);
+    path.lineTo(0.0 - padding, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(WaveClipper oldClipper) =>
+      animation != oldClipper.animation;
 }
