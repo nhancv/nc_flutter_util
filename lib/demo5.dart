@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'dart:ui' as ui;
+import 'package:vector_math/vector_math.dart' as Vector;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/animation.dart';
@@ -36,13 +38,36 @@ class DemoBody extends StatefulWidget {
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
+  List<double> waveList = [];
+  List<Offset> animList1 = [];
+  List<Offset> animList2 = [];
 
   @override
   void initState() {
     super.initState();
 
+    for (int i = 0; i < 360; i++) {
+      waveList.add(sin(i * Vector.degrees2Radians) * 20 + 50);
+    }
+
+    for (int i = 0; i < 360 * 2; i++) {
+      animList1.add(new Offset(i.toDouble(), waveList[(i) % 360]));
+      animList2.add(new Offset(i.toDouble(), waveList[(i) % 360]));
+    }
+
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
+    animationController.addListener(() {
+      for (int i = 0; i < 360 * 2; i++) {
+        animList1[i] = new Offset(animList1[i].dx,
+            waveList[(i + (720 * animationController.value).toInt()) % 360]);
+
+        animList2[i] = new Offset(
+            animList2[i].dx,
+            waveList[
+                (i + 50 + (360 * animationController.value).toInt()) % 360]);
+      }
+    });
     animationController.repeat();
   }
 
@@ -66,14 +91,14 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
                 widget.screenSize.width,
                 widget.screenSize.height,
               ),
-              painter: new _DemoPainter(widget.screenSize),
+              foregroundPainter: new _DemoPainter(widget.screenSize,
+                  animationController.value, animList1, animList2),
               child: new ClipPath(
                 child: new Container(
-                  width: widget.screenSize.width,
-                  height: 200.0,
-                  color: Colors.red,
-                ),
-                clipper: new WaveClipper(animationController.value),
+                    width: widget.screenSize.width,
+                    height: 200.0,
+                    color: Colors.blue),
+//                clipper: new WaveClipper(animationController.value, animList1),
               ),
             ),
       ),
@@ -83,11 +108,20 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
 
 class _DemoPainter extends CustomPainter {
   final Size screenSize;
+  final double animation;
+  Paint painter = new Paint()
+    ..style = PaintingStyle.stroke
+    ..color = Colors.black;
+  List<Offset> waveList1 = [];
+  List<Offset> waveList2 = [];
 
-  _DemoPainter(this.screenSize);
+  _DemoPainter(this.screenSize, this.animation, this.waveList1, this.waveList2);
 
   @override
-  void paint(Canvas canvas, Size size) {}
+  void paint(Canvas canvas, Size size) {
+    canvas.drawPoints(ui.PointMode.polygon, waveList1, painter);
+    canvas.drawPoints(ui.PointMode.polygon, waveList2, painter);
+  }
 
   @override
   bool shouldRepaint(_DemoPainter oldDelegate) => true;
@@ -95,10 +129,10 @@ class _DemoPainter extends CustomPainter {
 
 class WaveClipper extends CustomClipper<Path> {
   final double animation;
-  double waveHeight = 70.0;
-  double padding = 50.0;
 
-  WaveClipper(this.animation);
+  List<Offset> waveList1 = [];
+
+  WaveClipper(this.animation, this.waveList1);
 
   Offset getQuadraticBezier(List<Offset> offsetList, double t) {
     return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
@@ -117,18 +151,11 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = new Path();
-    path.moveTo(0.0 - padding, waveHeight);
 
-    Offset moving = getQuadraticBezier([
-      new Offset(0.0 - padding, waveHeight),
-      new Offset(size.width / 4, -waveHeight * 2),
-      new Offset(size.width / 4 * 3, waveHeight * 4),
-      new Offset(size.width +  padding, waveHeight),
-    ], animation);
-    path.quadraticBezierTo(moving.dx, moving.dy, size.width, waveHeight);
+    path.addPolygon(waveList1, false);
 
-    path.lineTo(size.width + padding, size.height);
-    path.lineTo(0.0 - padding, size.height);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0.0, size.height);
     path.close();
     return path;
   }
