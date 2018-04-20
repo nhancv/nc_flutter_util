@@ -20,15 +20,30 @@ class _DemoPageState extends State<DemoPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new DemoBody(screenSize: MediaQuery.of(context).size),
+      body: new Stack(
+        children: <Widget>[
+          new DemoBody(
+            screenSize: MediaQuery.of(context).size,
+            offset: 0,
+            color: Colors.black,
+          ),
+          new DemoBody(
+              screenSize: MediaQuery.of(context).size,
+              offset: 50,
+              color: Colors.red),
+        ],
+      ),
     );
   }
 }
 
 class DemoBody extends StatefulWidget {
   final Size screenSize;
+  final int offset;
+  final Color color;
 
-  DemoBody({Key key, @required this.screenSize}) : super(key: key);
+  DemoBody({Key key, @required this.screenSize, this.offset, this.color})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -41,6 +56,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   List<double> waveList = [];
   List<Offset> animList1 = [];
   List<Offset> animList2 = [];
+  int step = 0;
 
   @override
   void initState() {
@@ -58,16 +74,22 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
     animationController.addListener(() {
-      for (int i = 0; i < 360 * 2; i++) {
-        animList1[i] = new Offset(animList1[i].dx,
-            waveList[(i + (720 * animationController.value).toInt()) % 360]);
+      step = (animationController.value * 720).toInt();
+//      step ++ ;
+//      print(step);
 
-        animList2[i] = new Offset(
-            animList2[i].dx,
-            waveList[
-                (i + 50 + (360 * animationController.value).toInt()) % 360]);
+      for (int i = 0; i < 360 * 2; i++) {
+        animList1[i] = new Offset(
+            animList1[i].dx, waveList[(i + step) % 360]);
+
+//        animList2[i] = new Offset(
+//            animList2[i].dx,
+//            waveList[
+//                (i + widget.offset + (360 * animationController.value).toInt()) % 360]);
       }
+//      if(step >= 720) step = 0;
     });
+
     animationController.repeat();
   }
 
@@ -95,10 +117,11 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
                   animationController.value, animList1, animList2),
               child: new ClipPath(
                 child: new Container(
-                    width: widget.screenSize.width,
-                    height: 200.0,
-                    color: Colors.blue),
-//                clipper: new WaveClipper(animationController.value, animList1),
+                  width: widget.screenSize.width,
+                  height: 200.0,
+                  color: widget.color,
+                ),
+                clipper: new WaveClipper(animationController.value, animList1),
               ),
             ),
       ),
@@ -120,7 +143,7 @@ class _DemoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawPoints(ui.PointMode.polygon, waveList1, painter);
-    canvas.drawPoints(ui.PointMode.polygon, waveList2, painter);
+//    canvas.drawPoints(ui.PointMode.polygon, waveList2, painter);
   }
 
   @override
