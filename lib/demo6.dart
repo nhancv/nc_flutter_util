@@ -12,7 +12,7 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 1.0;
+    timeDilation = 4.0;
   }
 }
 
@@ -40,15 +40,42 @@ class DemoBody extends StatefulWidget {
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   AnimationController animationController;
+  List<Offset> pointList = [];
+  List<Offset> pivotList = [];
 
   @override
   void initState() {
     super.initState();
+    pivotList = [
+      new Offset(widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
+      new Offset(widget.screenSize.width * 5 / 6, widget.screenSize.height * 3 / 6),
+      new Offset(widget.screenSize.width * 4 / 6, widget.screenSize.height * 5 / 6),
+      new Offset(widget.screenSize.width * 2 / 6, widget.screenSize.height * 5 / 6),
+      new Offset(widget.screenSize.width * 1 / 6, widget.screenSize.height * 3 / 6),
+      new Offset(widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
+    ];
 
     animationController = new AnimationController(
         vsync: this, duration: new Duration(seconds: 2));
+    animationController.addListener(() {
+      pointList.add(getQuadraticBezier(pivotList, animationController.value));
+    });
 
-    animationController.repeat();
+    animationController.forward();
+  }
+
+  Offset getQuadraticBezier(List<Offset> offsetList, double t) {
+    return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
+  }
+
+  Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j) {
+    if (i == j) return offsetList[i];
+
+    Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1);
+    Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j);
+    Offset res =
+        new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
+    return res;
   }
 
   @override
@@ -71,8 +98,8 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
                 widget.screenSize.width,
                 widget.screenSize.height,
               ),
-              foregroundPainter: new _DemoPainter(
-                  widget.screenSize, animationController.value),
+              foregroundPainter: new _DemoPainter(widget.screenSize,
+                  animationController.value, pointList, pivotList),
             ),
       ),
     );
@@ -82,14 +109,23 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
 class _DemoPainter extends CustomPainter {
   final Size screenSize;
   final double animation;
+  final List<Offset> pointList;
+  final List<Offset> pivotList;
   Paint painter = new Paint()
-    ..style = PaintingStyle.stroke
+    ..style = PaintingStyle.fill
     ..color = Colors.black;
 
-  _DemoPainter(this.screenSize, this.animation);
+  _DemoPainter(this.screenSize, this.animation, this.pointList, this.pivotList);
 
   @override
   void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < pivotList.length - 1; i++) {
+      canvas.drawLine(pivotList[i], pivotList[i + 1], painter);
+    }
+
+    for (var o in pointList) {
+      canvas.drawCircle(o, 2.0, painter);
+    }
   }
 
   @override
