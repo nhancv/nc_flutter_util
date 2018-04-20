@@ -24,6 +24,16 @@ Flutter simple particle motion: https://medium.com/p/3b48fd1f182
 
 ![Preview](demo/demo3/particle_motion.gif)
 
+### Demo4
+Flutter combine matrix transaction animation
+
+![Preview](demo/demo4/demo4.gif)
+
+### Demo5
+Flutter wave clipper animation
+
+![Preview](demo/demo5/img_double_wave_clipper.gif)
+
 ### Handwriting animation
 Funny handwriting animation: https://medium.com/p/1183029b825b 
 
