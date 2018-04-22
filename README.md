@@ -34,6 +34,11 @@ Flutter wave clipper animation
 
 ![Preview](demo/demo5/img_double_wave_clipper.gif)
 
+### Demo6
+Flutter bezier simulation
+
+![Preview](demo/demo6/demo6.gif)
+
 ### Handwriting animation
 Funny handwriting animation: https://medium.com/p/1183029b825b 
 
