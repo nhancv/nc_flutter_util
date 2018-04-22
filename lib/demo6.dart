@@ -1,6 +1,4 @@
-import 'dart:math';
-import 'dart:ui' as ui;
-import 'package:vector_math/vector_math.dart' as Vector;
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/animation.dart';
@@ -12,7 +10,7 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 6.0;
+    timeDilation = 2.0;
   }
 }
 
@@ -60,11 +58,23 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     ];
 
     animationController = new AnimationController(
-        vsync: this, duration: new Duration(seconds: 2));
+        vsync: this, duration: new Duration(seconds: 5));
     animationController.addListener(() {
       pointList.add(getQuadraticBezier(pivotList, animationController.value));
     });
-
+    animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        new Timer(new Duration(seconds: 1), () {
+          pointList.clear();
+          animationController.reverse();
+        });
+      } else if (status == AnimationStatus.dismissed) {
+        new Timer(new Duration(seconds: 1), () {
+          pointList.clear();
+          animationController.forward();
+        });
+      }
+    });
     animationController.forward();
   }
 
