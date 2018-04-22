@@ -104,27 +104,18 @@ class _DemoPainter extends CustomPainter {
   Paint painter = new Paint()
     ..style = PaintingStyle.fill
     ..color = Colors.black;
+  Paint painter2 = new Paint()
+    ..style = PaintingStyle.fill
+    ..color = Colors.red;
 
   _DemoPainter(this.screenSize, this.animation, this.pointList, this.pivotList);
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (int i = 0; i < pivotList.length - 1; i++) {
-      canvas.drawLine(pivotList[i], pivotList[i + 1], painter);
-
-      Offset point =
-          getQuadraticBezier([pivotList[i], pivotList[i + 1]], animation);
-      canvas.drawCircle(point, 2.0, painter);
-
-      if (i + 1 < pivotList.length - 1) {
-        Offset point2 =
-            getQuadraticBezier([pivotList[i+1], pivotList[i + 2]], animation);
-        canvas.drawLine(point, point2, painter);
-      }
-    }
+    getQuadraticBezier(pivotList, animation, canvas: canvas, paint: painter2);
 
     for (var o in pointList) {
-      canvas.drawCircle(o, 2.0, painter);
+      canvas.drawCircle(o, 1.0, painter);
     }
   }
 
@@ -132,16 +123,25 @@ class _DemoPainter extends CustomPainter {
   bool shouldRepaint(_DemoPainter oldDelegate) => true;
 }
 
-Offset getQuadraticBezier(List<Offset> offsetList, double t) {
-  return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
+Offset getQuadraticBezier(List<Offset> offsetList, double t,
+    {Canvas canvas, Paint paint}) {
+  return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1,
+      canvas: canvas, paint: paint);
 }
 
-Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j) {
+Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j,
+    {Canvas canvas, Paint paint}) {
   if (i == j) return offsetList[i];
 
-  Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1);
-  Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j);
+  Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1,
+      canvas: canvas, paint: paint);
+  Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j,
+      canvas: canvas, paint: paint);
   Offset res =
       new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
+  if (canvas != null && paint != null) {
+    canvas.drawLine(b1, b0, paint);
+    canvas.drawCircle(res, 2.0, paint);
+  }
   return res;
 }
