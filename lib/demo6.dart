@@ -135,18 +135,16 @@ class _DemoPainter extends CustomPainter {
 
 Offset getQuadraticBezier(List<Offset> offsetList, double t,
     {Canvas canvas, Paint paint}) {
-  return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1,
-      canvas: canvas, paint: paint);
+  return getQuadraticBezier2(
+      offsetList, t, 0, offsetList.length - 1, canvas, paint);
 }
 
 Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j,
-    {Canvas canvas, Paint paint}) {
+    Canvas canvas, Paint paint) {
   if (i == j) return offsetList[i];
 
-  Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1,
-      canvas: canvas, paint: paint);
-  Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j,
-      canvas: canvas, paint: paint);
+  Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1, canvas, paint);
+  Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j, canvas, paint);
   Offset res =
       new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
   if (canvas != null && paint != null) {
