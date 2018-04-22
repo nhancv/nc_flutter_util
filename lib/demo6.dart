@@ -12,7 +12,7 @@ class DemoPage extends StatefulWidget {
   _DemoPageState createState() => new _DemoPageState();
 
   DemoPage() {
-    timeDilation = 4.0;
+    timeDilation = 6.0;
   }
 }
 
@@ -47,12 +47,16 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     pivotList = [
-      new Offset(widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
-      new Offset(widget.screenSize.width * 5 / 6, widget.screenSize.height * 3 / 6),
-      new Offset(widget.screenSize.width * 4 / 6, widget.screenSize.height * 5 / 6),
-      new Offset(widget.screenSize.width * 2 / 6, widget.screenSize.height * 5 / 6),
-      new Offset(widget.screenSize.width * 1 / 6, widget.screenSize.height * 3 / 6),
-      new Offset(widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
+      new Offset(
+          widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
+      new Offset(
+          widget.screenSize.width * 5 / 6, widget.screenSize.height * 3 / 6),
+      new Offset(
+          widget.screenSize.width * 3 / 6, widget.screenSize.height * 5 / 6),
+      new Offset(
+          widget.screenSize.width * 1 / 6, widget.screenSize.height * 3 / 6),
+      new Offset(
+          widget.screenSize.width * 3 / 6, widget.screenSize.height * 1 / 6),
     ];
 
     animationController = new AnimationController(
@@ -62,20 +66,6 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     });
 
     animationController.forward();
-  }
-
-  Offset getQuadraticBezier(List<Offset> offsetList, double t) {
-    return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
-  }
-
-  Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j) {
-    if (i == j) return offsetList[i];
-
-    Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1);
-    Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j);
-    Offset res =
-        new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
-    return res;
   }
 
   @override
@@ -121,6 +111,16 @@ class _DemoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < pivotList.length - 1; i++) {
       canvas.drawLine(pivotList[i], pivotList[i + 1], painter);
+
+      Offset point =
+          getQuadraticBezier([pivotList[i], pivotList[i + 1]], animation);
+      canvas.drawCircle(point, 2.0, painter);
+
+      if (i + 1 < pivotList.length - 1) {
+        Offset point2 =
+            getQuadraticBezier([pivotList[i+1], pivotList[i + 2]], animation);
+        canvas.drawLine(point, point2, painter);
+      }
     }
 
     for (var o in pointList) {
@@ -130,4 +130,18 @@ class _DemoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DemoPainter oldDelegate) => true;
+}
+
+Offset getQuadraticBezier(List<Offset> offsetList, double t) {
+  return getQuadraticBezier2(offsetList, t, 0, offsetList.length - 1);
+}
+
+Offset getQuadraticBezier2(List<Offset> offsetList, double t, int i, int j) {
+  if (i == j) return offsetList[i];
+
+  Offset b0 = getQuadraticBezier2(offsetList, t, i, j - 1);
+  Offset b1 = getQuadraticBezier2(offsetList, t, i + 1, j);
+  Offset res =
+      new Offset((1 - t) * b0.dx + t * b1.dx, (1 - t) * b0.dy + t * b1.dy);
+  return res;
 }
