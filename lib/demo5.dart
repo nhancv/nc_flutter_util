@@ -19,18 +19,18 @@ class DemoPage extends StatefulWidget {
 class _DemoPageState extends State<DemoPage> {
   @override
   Widget build(BuildContext context) {
+    Size size = new Size(MediaQuery.of(context).size.width, 200.0);
     return new Scaffold(
       body: new Stack(
         children: <Widget>[
-          new DemoBody(
-            screenSize: MediaQuery.of(context).size,
-            xOffset: 0,
-            yOffset: 0,
-          ),
-          new DemoBody(
-            screenSize: MediaQuery.of(context).size,
-            xOffset: 50,
-            yOffset: 10,
+          new DemoBody(size: size, xOffset: 0, yOffset: 0, color: Colors.red),
+          new Opacity(
+            opacity: 0.9,
+            child: new DemoBody(
+              size: size,
+              xOffset: 50,
+              yOffset: 10,
+            ),
           ),
         ],
       ),
@@ -39,11 +39,13 @@ class _DemoPageState extends State<DemoPage> {
 }
 
 class DemoBody extends StatefulWidget {
-  final Size screenSize;
+  final Size size;
   final int xOffset;
   final int yOffset;
+  final Color color;
 
-  DemoBody({Key key, @required this.screenSize, this.xOffset, this.yOffset})
+  DemoBody(
+      {Key key, @required this.size, this.xOffset, this.yOffset, this.color})
       : super(key: key);
 
   @override
@@ -66,7 +68,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
     animationController.addListener(() {
       animList1.clear();
       for (int i = -2 - widget.xOffset;
-          i <= widget.screenSize.width.toInt() + 2;
+          i <= widget.size.width.toInt() + 2;
           i++) {
         animList1.add(new Offset(
             i.toDouble() + widget.xOffset,
@@ -74,7 +76,8 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
                         360 *
                         Vector.degrees2Radians) *
                     20 +
-                50 + widget.yOffset));
+                50 +
+                widget.yOffset));
       }
     });
     animationController.repeat();
@@ -95,45 +98,24 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
           parent: animationController,
           curve: Curves.easeInOut,
         ),
-        builder: (context, child) => new CustomPaint(
-              size: new Size(
-                widget.screenSize.width,
-                widget.screenSize.height,
-              ),
-              foregroundPainter: new _DemoPainter(
-                  widget.screenSize, animationController.value, animList1),
-              child: new ClipPath(
-                child: Image.asset('images/demo5bg.jpg'),
-//                new Container(
-//                  width: widget.screenSize.width,
-//                  height: 200.0,
-//                  color: Colors.red,
-//                ),
-                clipper: new WaveClipper(animationController.value, animList1),
-              ),
+        builder: (context, child) => new ClipPath(
+              child: widget.color == null
+                  ? Image.asset(
+                      'images/demo5bg.jpg',
+                      width: widget.size.width,
+                      height: widget.size.height,
+                      fit: BoxFit.cover,
+                    )
+                  : new Container(
+                      width: widget.size.width,
+                      height: widget.size.height,
+                      color: widget.color,
+                    ),
+              clipper: new WaveClipper(animationController.value, animList1),
             ),
       ),
     );
   }
-}
-
-class _DemoPainter extends CustomPainter {
-  final Size screenSize;
-  final double animation;
-  Paint painter = new Paint()
-    ..style = PaintingStyle.stroke
-    ..color = Colors.black;
-  List<Offset> waveList1 = [];
-
-  _DemoPainter(this.screenSize, this.animation, this.waveList1);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPoints(ui.PointMode.polygon, waveList1, painter);
-  }
-
-  @override
-  bool shouldRepaint(_DemoPainter oldDelegate) => true;
 }
 
 class WaveClipper extends CustomClipper<Path> {
