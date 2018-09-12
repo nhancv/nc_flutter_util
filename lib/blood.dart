@@ -116,10 +116,11 @@ class Particle {
   Offset location;
   double radius;
   double life;
-  double remainingLife;
   Color color;
-  Size screenSize;
+
   double opacity;
+  double remainingLife;
+  Size screenSize;
 
   var palette = <Color>[];
 
