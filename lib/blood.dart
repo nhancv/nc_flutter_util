@@ -117,11 +117,10 @@ class Particle {
   double radius;
   double life;
   Color color;
-
   double opacity;
+
   double remainingLife;
   Size screenSize;
-
   var palette = <Color>[];
 
   Particle(Size screenSize) {
@@ -146,9 +145,9 @@ class Particle {
   move() {
     this.remainingLife--;
     this.radius--;
-    this.location = new Offset(
-        this.location.dx + this.speed.dx, this.location.dy + this.speed.dy);
-    int colorI = palette.length - (this.remainingLife / this.life * palette.length).round();
+    this.location = this.location + this.speed;
+    int colorI = palette.length -
+        (this.remainingLife / this.life * palette.length).round();
     if (colorI >= 0 && colorI < palette.length) {
       this.color = palette[colorI];
     }
@@ -172,7 +171,6 @@ class Particle {
       ..shader = gradient.createShader(
           Rect.fromCircle(center: this.location, radius: this.radius));
 
-    canvas.drawArc(Rect.fromCircle(center: this.location, radius: this.radius),
-        0.0, 2 * pi, false, painter);
+    canvas.drawCircle(this.location, this.radius, painter);
   }
 }
