@@ -8,7 +8,7 @@ import 'package:flutter/scheduler.dart' show timeDilation;
 
 class DemoPage extends StatefulWidget {
   @override
-  _DemoPageState createState() => new _DemoPageState();
+  _DemoPageState createState() => _DemoPageState();
 
   DemoPage() {
     timeDilation = 1.0;
@@ -18,8 +18,8 @@ class DemoPage extends StatefulWidget {
 class _DemoPageState extends State<DemoPage> {
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new DemoBody(
+    return Scaffold(
+      body: DemoBody(
         screenSize: MediaQuery.of(context).size,
       ),
     );
@@ -33,28 +33,49 @@ class DemoBody extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new _DemoBodyState();
+    return _DemoBodyState();
   }
 }
 
 class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
+  AnimationController animationController;
+  double cursorX;
+  int direction = 1; //1 left-right, -1 right-left
+
   @override
   void initState() {
     super.initState();
+
+    cursorX = widget.screenSize.width / 2;
+    animationController =
+        new AnimationController(vsync: this, duration: Duration(seconds: 2))
+          ..addListener(() {
+            if (cursorX >= widget.screenSize.width)
+              direction = -1;
+            else if (cursorX <= 0)
+              direction = 1;
+
+            cursorX += direction;
+          })
+          ..repeat();
   }
 
   @override
   void dispose() {
+    animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
+    return Container(
       alignment: Alignment.center,
-      child: new CustomPaint(
-        size: widget.screenSize,
-        painter: _DemoPainter(widget.screenSize),
+      child: AnimatedBuilder(
+        animation: animationController,
+        builder: (context, child) => CustomPaint(
+              size: widget.screenSize,
+              painter: _DemoPainter(widget.screenSize, cursorX),
+            ),
       ),
     );
   }
@@ -62,46 +83,45 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
 
 class _DemoPainter extends CustomPainter {
   final Size screenSize;
-  Paint painter = new Paint()
+  final double cursorX;
+  final Paint painter = Paint()
     ..color = Colors.black
     ..strokeWidth = 1.0
     ..style = PaintingStyle.stroke;
 
-  _DemoPainter(this.screenSize);
+  _DemoPainter(this.screenSize, this.cursorX);
 
   @override
   void paint(Canvas canvas, Size size) {
-    Offset mid = size.center(Offset.zero);
+    Offset cursor = Offset(cursorX, size.height / 2);
 
     double r = 30.0;
     double h = 50.0;
     double left = 0.0;
     double right = size.width;
-    double top = mid.dy;
+    double top = cursor.dy;
     double bottom = top + h;
 
     Path path = Path()
-    ..moveTo(left, top)
-    ..lineTo(mid.dx - sqrt(3.0) * r, top)
-    ..addArc(
-        Rect.fromCircle(
-            center: Offset(mid.dx - sqrt(3.0) * r, mid.dy - r), radius: r),
-        1 / 6 * pi,
-        1 / 3 * pi)
-    ..addArc(Rect.fromCircle(center: mid, radius: r), 7 / 6 * pi,
-        2 / 3 * pi)
-    ..addArc(Rect.fromCircle(
-        center: Offset(mid.dx + sqrt(3.0) * r, mid.dy - r), radius: r),
-        3 / 6 * pi,
-        1 / 3 * pi)
-    ..moveTo(mid.dx + sqrt(3.0) * r, top)
-    ..lineTo(right, top)
-    ..lineTo(right, bottom)
-    ..lineTo(left, bottom)
-    ..lineTo(left, top);
+      ..moveTo(left, top)
+      ..lineTo(cursor.dx - sqrt(3.0) * r, top)
+      ..addArc(
+          Rect.fromCircle(
+              center: Offset(cursor.dx - sqrt(3.0) * r, cursor.dy - r), radius: r),
+          1 / 6 * pi,
+          1 / 3 * pi)
+      ..addArc(Rect.fromCircle(center: cursor, radius: r), 7 / 6 * pi, 2 / 3 * pi)
+      ..addArc(
+          Rect.fromCircle(
+              center: Offset(cursor.dx + sqrt(3.0) * r, cursor.dy - r), radius: r),
+          3 / 6 * pi,
+          1 / 3 * pi)
+      ..moveTo(cursor.dx + sqrt(3.0) * r, top)
+      ..lineTo(right, top)
+      ..lineTo(right, bottom)
+      ..lineTo(left, bottom)
+      ..lineTo(left, top);
     canvas.drawPath(path, painter);
-
-
   }
 
   @override
