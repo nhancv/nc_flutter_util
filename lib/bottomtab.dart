@@ -80,32 +80,27 @@ class _DemoPainter extends CustomPainter {
     double top = mid.dy;
     double bottom = top + h;
 
-    //rect
-    canvas.drawLine(
-        Offset(left, top), Offset(mid.dx - sqrt(3.0) * r, top), painter);
-    canvas.drawLine(
-        Offset(mid.dx + sqrt(3.0) * r, top), new Offset(right, top), painter);
-    canvas.drawLine(Offset(left, bottom), new Offset(right, bottom), painter);
-
-    //center
-    canvas.drawArc(Rect.fromCircle(center: mid, radius: r), 7 / 6 * pi,
-        2 / 3 * pi, false, painter);
-    //left circle
-    canvas.drawArc(
+    Path path = Path()
+    ..moveTo(left, top)
+    ..lineTo(mid.dx - sqrt(3.0) * r, top)
+    ..addArc(
         Rect.fromCircle(
             center: Offset(mid.dx - sqrt(3.0) * r, mid.dy - r), radius: r),
         1 / 6 * pi,
-        1 / 3 * pi,
-        false,
-        painter);
-    //right circle
-    canvas.drawArc(
-        Rect.fromCircle(
-            center: Offset(mid.dx + sqrt(3.0) * r, mid.dy - r), radius: r),
+        1 / 3 * pi)
+    ..addArc(Rect.fromCircle(center: mid, radius: r), 7 / 6 * pi,
+        2 / 3 * pi)
+    ..addArc(Rect.fromCircle(
+        center: Offset(mid.dx + sqrt(3.0) * r, mid.dy - r), radius: r),
         3 / 6 * pi,
-        1 / 3 * pi,
-        false,
-        painter);
+        1 / 3 * pi)
+    ..moveTo(mid.dx + sqrt(3.0) * r, top)
+    ..lineTo(right, top)
+    ..lineTo(right, bottom)
+    ..lineTo(left, bottom)
+    ..lineTo(left, top);
+    canvas.drawPath(path, painter);
+
 
   }
 
