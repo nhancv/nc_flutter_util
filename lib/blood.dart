@@ -82,12 +82,7 @@ class _DemoBodyState extends State<DemoBody> with TickerProviderStateMixin {
         animation: animationController,
         builder: (context, child) => new CustomPaint(
               size: widget.screenSize,
-              painter: _DemoPainter(
-                  new Size(
-                    widget.screenSize.width,
-                    widget.screenSize.height,
-                  ),
-                  particleSystem),
+              painter: _DemoPainter(widget.screenSize, particleSystem),
             ),
       ),
     );

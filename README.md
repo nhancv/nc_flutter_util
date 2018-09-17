@@ -12,7 +12,7 @@ Source tag:
 ### Demo1
 Flutter custom indicator animation simple: https://medium.com/p/2c487489040b
 
-![Preview](demo/demo1.gif)
+![Preview](demo/demo1/demo1.gif)
 
 ### Demo2
 Flutter curves simulation: https://medium.com/p/f935bb225ad2
