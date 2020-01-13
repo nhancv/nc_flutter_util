@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 //import 'demo5.dart';
 //import 'demo6.dart';
 //import 'beesight.dart';
-import 'blood.dart';
+//import 'blood.dart';
+import 'tab_effect.dart';
 
 void main() => runApp(new MyApp());
 
