@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 //import 'demo6.dart';
 //import 'beesight.dart';
 //import 'blood.dart';
-import 'bottomtab.dart';
+import 'tab_effect.dart';
 
 void main() => runApp(new MyApp());
 
